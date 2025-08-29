@@ -4,10 +4,22 @@ workflows:
     max_build_duration: 60
     environment:
       flutter: stable
+      vars:
+        # Optional: force Gradle version
+        GRADLE_VERSION: 8.12
     scripts:
       - name: Get dependencies
         script: flutter pub get
+      - name: Upgrade Android Gradle Plugin
+        script: |
+          # Make sure AGP is at least 8.1.1
+          sed -i '' "s/com.android.tools.build:gradle:.*/com.android.tools.build:gradle:8.1.1/" android/build.gradle
       - name: Build APK
-        script: flutter build apk --release
+        script: flutter build apk --release --android-skip-build-dependency-validation
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
+    caching:
+      # Clear Gradle and Flutter caches to avoid old versions
+      paths:
+        - ~/.gradle
+        - ~/.pub-cache
